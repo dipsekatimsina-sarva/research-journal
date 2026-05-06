@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Research Journal — Dipseka Timsina</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #12120e;
+    background-image:
+      radial-gradient(ellipse at 15% 50%, rgba(42, 60, 28, 0.35) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 50%, rgba(80, 35, 10, 0.3) 0%, transparent 55%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: 40px 20px;
+  }
+
+  .back-link {
+    position: fixed;
+    top: 24px;
+    left: 28px;
+    font-size: 11px;
+    color: rgba(196, 168, 100, 0.5);
+    text-decoration: none;
+    letter-spacing: 1.5px;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: rgba(196, 168, 100, 0.9); }
+
+  .scene {
+    perspective: 1400px;
+    width: 420px;
+    height: 580px;
+  }
+
+  .book {
+    width: 420px;
+    height: 580px;
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  .page {
+    position: absolute;
+    inset: 0;
+    background: #DDD0A8;
+    border-left: 4px solid #3A5433;
+    border-radius: 2px 12px 12px 2px;
+    padding: 52px 48px 44px;
+    display: none;
+    transform-origin: left center;
+    backface-visibility: hidden;
+    box-shadow:
+      4px 6px 24px rgba(0,0,0,0.55),
+      1px 0 0 rgba(180,150,80,0.3) inset;
+  }
+
+  .page.ruled {
+    background-image: repeating-linear-gradient(
+      transparent, transparent 27px,
+      rgba(90, 68, 28, 0.2) 27px, rgba(90, 68, 28, 0.2) 28px
+    );
+    background-position: 0 72px;
+  }
+
+  @keyframes pgFO  { from{transform:rotateY(0deg)}   to{transform:rotateY(-90deg)} }
+  @keyframes pgFI  { from{transform:rotateY(90deg)}  to{transform:rotateY(0deg)}  }
+  @keyframes pgFOR { from{transform:rotateY(0deg)}   to{transform:rotateY(90deg)} }
+  @keyframes pgFIR { from{transform:rotateY(-90deg)} to{transform:rotateY(0deg)}  }
+
+  .eF { animation: pgFO  0.44s ease-in  forwards; }
+  .eR { animation: pgFOR 0.44s ease-in  forwards; }
+  .iF { animation: pgFI  0.44s ease-out forwards; }
+  .iR { animation: pgFIR 0.44s ease-out forwards; }
+
+  /* Cover */
+  .cov {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .cov-title  { font-size: 28px; color: #1A0A00; line-height: 1.4; }
+  .cov-line   { height: 0.5px; margin: 16px auto; }
+  .cov-line-g { width: 160px; background: #1E2E1A; }
+  .cov-line-o { width: 160px; background: #B5451B; }
+  .cov-name   { font-size: 14px; color: #3D1F08; letter-spacing: 1.5px; margin-top: 4px; }
+  .cov-quote  { font-size: 12px; color: #1E2E1A; font-style: italic; margin-top: 10px; line-height: 1.7; }
+  .cov-divider{ color: #1E2E1A; margin: 20px 0; font-size: 13px; letter-spacing: 12px; }
+  .cov-loc    { font-size: 11.5px; color: #1E2E1A; letter-spacing: 2px; line-height: 2; }
+  .cov-year   { font-size: 11px; color: #B5451B; letter-spacing: 4px; margin-top: 20px; }
+
+  /* Chapter pages */
+  .acc {
+    position: absolute;
+    left: 0; top: 100px;
+    width: 4px; height: 48px;
+    background: #3A5433;
+  }
+  .ch-num  { font-size: 10px; color: #B5451B; letter-spacing: 3.5px; }
+  .ch-date { font-size: 10px; color: #7A5430; float: right; margin-top: -14px; }
+  .ch-sep  { clear: both; height: 0.5px; background: #8B7040; margin: 12px 0 24px; }
+  .ch-title{ font-size: 22px; font-weight: bold; color: #1A0A00; line-height: 1.3; margin-bottom: 20px; }
+  .ch-body { font-size: 13px; color: #2D1A08; line-height: 1.9; margin-bottom: 16px; }
+  .ch-inst { font-size: 11px; color: #6B4E2A; font-style: italic; line-height: 1.7; }
+  .ch-link {
+    display: block; margin-top: 22px; padding-top: 12px;
+    border-top: 0.5px solid #8B7040;
+    font-size: 11px; color: #B5451B; text-decoration: none;
+    transition: color 0.2s;
+  }
+  .ch-link:hover { color: #8B3312; }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: 30px;
+  }
+
+  .nbtn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid rgba(180, 150, 80, 0.3);
+    background: rgba(221, 208, 168, 0.06);
+    color: rgba(180, 150, 80, 0.6);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .nbtn:hover:not(:disabled) {
+    background: rgba(221, 208, 168, 0.12);
+    color: rgba(221, 208, 168, 0.9);
+    border-color: rgba(180, 150, 80, 0.6);
+  }
+  .nbtn:disabled { opacity: 0.2; cursor: default; }
+
+  .dots { display: flex; gap: 8px; align-items: center; }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(180, 150, 80, 0.25);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .dot.on {
+    background: #B5451B;
+    width: 20px;
+    border-radius: 3px;
+  }
+
+  .pg-info {
+    margin-top: 14px;
+    font-size: 10.5px;
+    color: rgba(180, 150, 80, 0.4);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="https://github.com/dipsekatimsina-sarva">← github profile</a>
+
+<div class="scene">
+  <div class="book" id="book">
+
+    <!-- Cover -->
+    <div class="page" id="pg0" style="display:block">
+      <div class="cov">
+        <div class="cov-line cov-line-g"></div>
+        <div class="cov-title">Field<br>Research<br>Journal</div>
+        <div class="cov-line cov-line-g"></div>
+        <div class="cov-name">Dipseka Timsina</div>
+        <div class="cov-quote">"got curious. went there. took notes."</div>
+        <div class="cov-divider">* * *</div>
+        <div class="cov-loc">
+          Montana &nbsp;·&nbsp; Turks &amp; Caicos<br>
+          Mississippi &nbsp;·&nbsp; NASA
+        </div>
+        <div class="cov-year">2020 – 2024</div>
+        <div class="cov-line cov-line-o" style="margin-top:22px;"></div>
+      </div>
+    </div>
+
+    <!-- Chapter I: NASA SEES -->
+    <div class="page ruled" id="pg1">
+      <div class="acc"></div>
+      <div class="ch-num">Chapter I</div>
+      <div class="ch-date">Summer 2020</div>
+      <div class="ch-sep"></div>
+      <div class="ch-title">NASA SEES<br>Internship</div>
+      <div class="ch-body">
+        Earth science data analysis using NASA satellite datasets, conducted remotely during the COVID-19 pandemic with a globally distributed research team.
+        <br><br>
+        Completed Python programming coursework and participated in a 48-hour international innovation challenge alongside the core research.
+      </div>
+      <div class="ch-inst">
+        STEM Enhancement in Earth Science (SEES)<br>
+        University of Texas at Austin &nbsp;·&nbsp; Mentor: Debbie Reynolds
+      </div>
+      <a class="ch-link" href="https://github.com/dipsekatimsina-sarva/nasa-sees-internship">
+        → view full research on GitHub
+      </a>
+    </div>
+
+    <!-- Chapter II: Wildfire -->
+    <div class="page ruled" id="pg2">
+      <div class="acc"></div>
+      <div class="ch-num">Chapter II</div>
+      <div class="ch-date">Summer 2023</div>
+      <div class="ch-sep"></div>
+      <div class="ch-title">Wildfire<br>Spread Model</div>
+      <div class="ch-body">
+        Agent-based simulation of wildfire propagation across Montana landscapes, built in NetLogo for the Montana Models mathematics outreach program for rural youth.
+        <br><br>
+        Modeled forest density, terrain, river barriers, and wind as variables. Presented at the Leadership Alliance National Symposium, 2023.
+      </div>
+      <div class="ch-inst">
+        Montana State University &nbsp;·&nbsp; SR-EIP, The Leadership Alliance<br>
+        Supervisors: Dr. Elizabeth Burroughs &amp; Dr. Mary Carlson
+      </div>
+      <a class="ch-link" href="https://github.com/dipsekatimsina-sarva/wildfire-spread-model">
+        → view full research on GitHub
+      </a>
+    </div>
+
+    <!-- Chapter III: Octopus -->
+    <div class="page ruled" id="pg3">
+      <div class="acc"></div>
+      <div class="ch-num">Chapter III</div>
+      <div class="ch-date">Fall 2023</div>
+      <div class="ch-sep"></div>
+      <div class="ch-title">Octopus<br>Behavior Analysis</div>
+      <div class="ch-body">
+        Field and video-based study of skin patterning and nocturnal behavior in <em>Callistoctopus furvus</em> — a recently described octopus species in the Western Atlantic.
+        <br><br>
+        Night SCUBA dives nightly from 19:30–21:00. Red vs. white light comparison using chi-square and Wilcoxon tests in R.
+      </div>
+      <div class="ch-inst">
+        School for Field Studies, South Caicos<br>
+        Supervisor: Dr. C.E. O'Brien
+      </div>
+      <a class="ch-link" href="https://github.com/dipsekatimsina-sarva/Callistoctopus-furvus-behavior-analysis">
+        → view full research on GitHub
+      </a>
+    </div>
+
+    <!-- Chapter IV: Loblolly -->
+    <div class="page ruled" id="pg4">
+      <div class="acc"></div>
+      <div class="ch-num">Chapter IV</div>
+      <div class="ch-date">Summer 2024</div>
+      <div class="ch-sep"></div>
+      <div class="ch-title">Loblolly Pine<br>Biomass</div>
+      <div class="ch-body">
+        Spatial modeling of biomass allocation in <em>Pinus taeda</em> across the southern U.S. using Dirichlet regression with geographic covariates.
+        <br><br>
+        Adding latitude and longitude significantly improved model fit. Foliage proportion increases at higher latitudes — relevant to carbon sequestration policy.
+      </div>
+      <div class="ch-inst">
+        Mississippi State University &nbsp;·&nbsp; REU 2024<br>
+        Research Experience for Undergraduates
+      </div>
+      <a class="ch-link" href="https://github.com/dipsekatimsina-sarva/loblolly-biomass-spatial">
+        → view full research on GitHub
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button class="nbtn" id="prev" disabled>&#8592;</button>
+  <div class="dots" id="dots">
+    <div class="dot on" onclick="goTo(0)"></div>
+    <div class="dot" onclick="goTo(1)"></div>
+    <div class="dot" onclick="goTo(2)"></div>
+    <div class="dot" onclick="goTo(3)"></div>
+    <div class="dot" onclick="goTo(4)"></div>
+  </div>
+  <button class="nbtn" id="next">&#8594;</button>
+</div>
+<div class="pg-info" id="pginfo">Cover &nbsp;·&nbsp; 1 of 5</div>
+
+<script>
+  const pages = document.querySelectorAll('.page');
+  const dots  = document.querySelectorAll('.dot');
+  const prev  = document.getElementById('prev');
+  const next  = document.getElementById('next');
+  const info  = document.getElementById('pginfo');
+  const labels = [
+    'Cover · 1 of 5',
+    'Chapter I · 2 of 5',
+    'Chapter II · 3 of 5',
+    'Chapter III · 4 of 5',
+    'Chapter IV · 5 of 5'
+  ];
+  let cur = 0, busy = false;
+
+  function goTo(n) {
+    if (n === cur || busy || n < 0 || n >= pages.length) return;
+    busy = true;
+    const fwd  = n > cur;
+    const from = pages[cur];
+    const to   = pages[n];
+
+    from.classList.add(fwd ? 'eF' : 'eR');
+    from.addEventListener('animationend', () => {
+      from.classList.remove('eF', 'eR');
+      from.style.display = 'none';
+    }, { once: true });
+
+    setTimeout(() => {
+      to.style.display = 'block';
+      to.style.transform = fwd ? 'rotateY(90deg)' : 'rotateY(-90deg)';
+      to.getBoundingClientRect();
+      to.classList.add(fwd ? 'iF' : 'iR');
+      to.addEventListener('animationend', () => {
+        to.style.transform = 'rotateY(0deg)';
+        to.classList.remove('iF', 'iR');
+        to.style.transform = '';
+        busy = false;
+      }, { once: true });
+    }, 400);
+
+    dots[cur].classList.remove('on');
+    dots[n].classList.add('on');
+    cur = n;
+    prev.disabled = cur === 0;
+    next.disabled = cur === pages.length - 1;
+    info.textContent = labels[cur];
+  }
+
+  window.goTo = goTo;
+  prev.addEventListener('click', () => goTo(cur - 1));
+  next.addEventListener('click', () => goTo(cur + 1));
+</script>
+</body>
+</html>
